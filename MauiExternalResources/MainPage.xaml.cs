@@ -1,24 +1,38 @@
-﻿namespace MauiExternalResources;
+﻿using System.Text.Json;
+
+namespace MauiExternalResources;
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
+    int count = 0;
 
-	public MainPage()
-	{
-		InitializeComponent();
-	}
+    public MainPage()
+    {
+        InitializeComponent();
+    }
 
-	private void OnCounterClicked(object sender, EventArgs e)
-	{
-		count++;
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await LoadMauiAsset();
+    }
 
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
+    private static async Task LoadMauiAsset()
+    {
+        await using var stream = await FileSystem.OpenAppPackageFileAsync("data.json");
+        using var reader = new StreamReader(stream);
 
-		SemanticScreenReader.Announce(CounterBtn.Text);
-	}
+        var contents = await reader.ReadToEndAsync();
+
+        // use breakpoint to see what person has been deserialize from de data.json
+        var person = JsonSerializer.Deserialize<Person>(contents);
+    }
 }
+
+public class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
 
